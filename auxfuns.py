@@ -7,12 +7,14 @@ import pickle
 import auxfuns
 
 
+
 '''
 Author: YC3
 
 Description:
 Useful auxiliary functions.
 ''' 
+
 
 
 ## scale data to [0, 1] range
