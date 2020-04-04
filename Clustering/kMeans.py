@@ -19,6 +19,7 @@ python3 kMeans.py -k 2
 ''' 
 
 
+
 def dist_euc(v1, v2):
     
     return np.sqrt(sum(np.power(v1 - v2, 2)))
