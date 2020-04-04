@@ -11,7 +11,7 @@ import auxfuns
 '''
 Author: YC3
 
-Run with:
+Example:
 python3 kNN.py -k 8 -f False
 
 If want to see a scatter plot of training data:

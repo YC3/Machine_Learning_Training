@@ -12,11 +12,12 @@ import auxfuns
 
 
 '''
+Author: YC3
+
 Parameters:
 -t, --type: 'mean' to predict with average in leaf nodes, or 'reg' to fit a linear regression model
 -e, --error: float, min error reduction to continue
 -s, --size: int, min number of data points in each leaf node
-
 
 Example:
 python3 CART.py -t reg -e 0.5 -s 10

@@ -10,10 +10,12 @@ import auxfuns
 
 
 '''
+Author: YC3
+
 Parameters:
 -k, --k: number of centroids
 
-Examples:
+Example:
 python3 kMeans.py -k 2
 
 ''' 

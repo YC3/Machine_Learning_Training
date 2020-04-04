@@ -11,8 +11,9 @@ import auxfuns
 
 
 '''
-run with:
+Author: YC3
 
+Example:
 python3 AdaBoost.py
 '''
 
