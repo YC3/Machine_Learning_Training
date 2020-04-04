@@ -7,6 +7,8 @@ import sys, getopt
 sys.path.append('../')
 import auxfuns 
 
+
+
 '''
 Parameters:
 -k, --k: number of centroids
