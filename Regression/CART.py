@@ -5,7 +5,6 @@ import math
 from numpy.random import random 
 import matplotlib.pyplot as plt 
 import sys, getopt
-import linalg
 
 sys.path.append('../')
 import auxfuns 
