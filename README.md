@@ -4,7 +4,7 @@ The scripts in this repository are some machine learning algorithms coded in pyt
 
 ## About the repository
 
- <img src='./figure/tree.png' alt='tree' width='200'/>
+ <img src='./Figure/tree.png' alt='tree' width='200'/>
 
 ## Purpose
 
