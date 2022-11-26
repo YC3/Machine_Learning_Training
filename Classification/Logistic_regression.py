@@ -21,10 +21,10 @@ Parameters:
 
 Examples:
 1. batch GD:
-python3 Logistic_regression.py -m batch -a 0.01
+python3 Logistic_regression.py -m batch -a 0.01 -i 150
 
 2. SGD:
-python3 Logistic_regression.py -m sgd1 -a 0.01
+python3 Logistic_regression.py -m sgd1 -a 0.01 -i 150
 
 3. SGD with decreasing step length and randomization:
 python3 Logistic_regression.py -m sgd2 -a 0.01 -i 150
@@ -33,11 +33,16 @@ python3 Logistic_regression.py -m sgd2 -a 0.01 -i 150
 
 
 def sigmoid(input):
-    return 1.0/(1 + np.exp(- input))
+
+     # to avoid overflow
+    if input.shape[0] == 1 and input < 0:
+        return np.exp(input)/(1 + np.exp(input))
+
+    return 1.0/(1 + np.exp(-input))
 
 
 # calculate the gradient of entire dataset
-def gradAscent(data, a = 0.01):    # change alpha for Gradient Descent
+def gradDescent(data, a = 0.01, iter_num = 500):
     
     lab_v = np.mat(data.iloc[:, 0]).transpose()
     
@@ -45,20 +50,20 @@ def gradAscent(data, a = 0.01):    # change alpha for Gradient Descent
     data_m = np.mat(np.append(b, data.iloc[:, 1:], axis = 1))
 
     m, n = data_m.shape
-    cycles = 500
+    
     weights_v = np.ones((n, 1))
     
-    for k in range(cycles):
+    for k in range(iter_num):
         pred_v = sigmoid(data_m*weights_v)
-        error_v = (lab_v - pred_v)
+        error_v = pred_v - lab_v
         
-        weights_v = weights_v + a*data_m.transpose()*error_v
+        weights_v = weights_v - a*data_m.transpose()*error_v
         
     return weights_v
 
 
 # calculate the gradient of only 1 example
-def StocGD_1(data, a = -0.01):
+def StocGD_1(data, a = 0.01, iter_num = 500):
     
     lab_v = np.mat(data.iloc[:, 0]).transpose()
     
@@ -69,17 +74,19 @@ def StocGD_1(data, a = -0.01):
 
     weights_v = np.ones((n, 1))
 
-    for i in range(m):
-        pred = sigmoid(sum(data_m[i]*weights_v))
-        error = lab_v[i] - pred
+    for i in range(iter_num):
+        
+        for x in range(m):
+            pred = sigmoid(sum(data_m[x]*weights_v))
+            error = pred - lab_v[x]
 
-        weights_v = weights_v + a*data_m[i].transpose()*error
+            weights_v = weights_v - a*data_m[x].transpose()*error
         
     return weights_v
 
 
 # decreasing alpha each iteration, randomized
-def StocGD_2(data, a = -0.01, iter_num = 200):
+def StocGD_2(data, a = 0.01, iter_num = 500):
     
     lab_v = np.mat(data.iloc[:, 0]).transpose()
     
@@ -87,7 +94,7 @@ def StocGD_2(data, a = -0.01, iter_num = 200):
     data_m = np.mat(np.append(b, data.iloc[:, 1:], axis = 1))
 
     m, n = data_m.shape
-    iter_num = 500
+    
     weights_v = np.ones((n, 1))
 
     for i in range(iter_num):
@@ -98,10 +105,11 @@ def StocGD_2(data, a = -0.01, iter_num = 200):
             a = 4/(1.0 + i + x) + a    # alpha decrease as iter_num increases
             
             rand_id = np.random.randint(0, len(id_list))
+            
             pred = sigmoid(sum(data_m[rand_id]*weights_v))
-            error = lab_v[rand_id] - pred
+            error = pred - lab_v[rand_id]
 
-            weights_v = weights_v + a*data_m[rand_id].transpose()*error
+            weights_v = weights_v - a*data_m[rand_id].transpose()*error
             del(id_list[rand_id])
         
     return weights_v
@@ -119,11 +127,12 @@ def LR_classifier(example, weights):
 
 if __name__ == '__main__':
 
-    # get user input
+    # set default
     iter_num = 150
     alpha = 0.01
     method = 'batch'
 
+    # get user input
     opts,args = getopt.getopt(sys.argv[1:], '-m:-a:-i:', ['method=', 'alpha=', 'iternum='])
     for opt_name, opt_value in opts:
         if opt_name in ('-m', '--method'):
@@ -131,7 +140,7 @@ if __name__ == '__main__':
         if opt_name in ('-a', '--alpha'):
             alpha = float(opt_value)
         if opt_name in ('-i', '--iternum'):
-            iter_num = str(opt_value)   
+            iter_num = int(opt_value)   
 
 
     # read in data
@@ -144,16 +153,14 @@ if __name__ == '__main__':
     
     # gradient ascent
     if method == 'batch':
-        weigths = gradAscent(train_set, a = alpha)
-    
+        weigths = gradDescent(train_set, a = alpha, iter_num = iter_num)
     # stochastic gradient ascent 1
-    if method == 'sgd1':
-        weigths = StocGD_1(train_set, a = alpha)
-
+    elif method == 'sgd1':
+        weigths = StocGD_1(train_set, a = alpha, iter_num = iter_num)
     # stochastic gradient ascent 2
-    if method == 'sgd2':
+    else:
         weigths = StocGD_2(train_set, a = alpha, iter_num = iter_num)
-        
+       
     # prediction
     pred = []
     for i in range(test_set.shape[0]):
