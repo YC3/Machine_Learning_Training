@@ -41,7 +41,7 @@ def entropy(lab):
     h = 0.0
     for i in labCount:
         p = i/total
-        h -= p*math.log(p, 2)
+        h += p*abs(math.log(p, 2))
     
     return h
 
@@ -51,7 +51,7 @@ def branch_split(data, f_idx, value):
     data_fcol = data.iloc[:, f_idx]
     data_sel = data.loc[data_fcol == value, :]
     
-    data_left = data_sel.iloc[:, list(np.arange(0, f_idx)) + list(np.arange(f_idx + 1, data.shape[1]))]
+    data_left = data_sel.iloc[:, list(np.arange(f_idx)) + list(np.arange(f_idx + 1, data.shape[1]))]
     
     return data_left
 
@@ -86,37 +86,45 @@ def split_select(data):
     return feat_sel
     
 
+
 def class_vote(data):
     
-    lab_v = set(data.iloc[:, -1])
+    lab_v = set(data.iloc[:, 0])
     count_class = {}
     for i in lab_v:
-        count_class[i] = sum(data.iloc[:, -1] == i)
+        count_class[i] = sum(data.iloc[:, 0] == i)
     
     max_class = max([(value, key) for key, value in count_class.items()])[1]
 
     return max_class
 
 
+
 def grow_tree(data):
     
     # stop when the items of a class have the same labels
     if len(set(data.iloc[:, 0])) == 1:  
-        return set(data.iloc[:, 0])
+        return data.iloc[0, 0]
+
     # stop when only 1 feature left
     if data.shape[1] == 2:       
         return class_vote(data)
 
     # choose best feature to split data
     fet_id = split_select(data)
-    fet_sel = data.columns.values[fet_id]
-    
-    tree = {fet_sel:{}}
+    if fet_id != -1:    # cannot split: multiple features left but highly correlated
 
-    uni_val = set(data.iloc[:, fet_id])
-    for v in uni_val:
-        data_sub = branch_split(data, fet_id, v)
-        tree[fet_sel][v] = grow_tree(data_sub)
+        fet_sel = data.columns[fet_id]
+        
+        tree = {fet_sel:{}}
+
+        uni_val = set(data.iloc[:, fet_id])
+
+        for v in uni_val:
+            data_sub = branch_split(data, fet_id, v)
+            tree[fet_sel][v] = grow_tree(data_sub)
+    else:
+        return class_vote(data)
 
     return tree
 
@@ -156,7 +164,9 @@ if __name__ == '__main__':
     # since ID.3 does not take numeric data, need to categorize numeric features
     for i in data.columns.values[1:]:
         data[i] = auxfuns.feature_cut(data[i], n_class = 4)
+    print(data.head())
     
+
     # get the tree
     tree_o = grow_tree(data)
 
@@ -172,11 +182,9 @@ if __name__ == '__main__':
     for i in range(data.shape[0]):
         pred = np.append(pred, tree_classifier_id3(tree_o, data.iloc[i, :]))
 
-    pred2 = []
-    for i in pred:
-        pred2.append(list(i)[0])
-  
+    print(pred[0:10])
+    print(np.array(data.region)[0:10])
 
     # error rate
-    er = round(auxfuns.cat_error_rate(data.region, pred2), 5)
+    er = round(auxfuns.cat_error_rate(np.array(data.region), np.array(pred)), 5)
     print('Error Rate: ' + str(er))
