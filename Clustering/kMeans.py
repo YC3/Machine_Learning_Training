@@ -64,7 +64,7 @@ def kMeans(data, k, distFUN = dist_euc):
                 change_class = True
             class_labels[i, :] = (closest_cent, closest_dist)
         
-        # reconpute centroids
+        # recompute centroids
         for c in range(k):
             cents[c, :] = np.mean(data.loc[class_labels[:, 0] == c, :], axis = 0)
     
