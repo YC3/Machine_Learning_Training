@@ -119,9 +119,6 @@ def splitSelect(data, leafFun, errorFun, minErrorReduce, minLeafSize):
     
     data_l, data_r = Split(data, sel_feature, sel_value)
     
-    # min leaf node size
-    if data_l.shape[0] < minLeafSize or data_r.shape[0] < minLeafSize: 
-        return None, leafMean
             
     return sel_feature, sel_value
         
@@ -132,7 +129,7 @@ def CreateTree(data, leafFun, errorFun, minErrorReduce, minLeafSize):
     feature, value = splitSelect(data, leafFun, errorFun, minErrorReduce, minLeafSize)
 
     if feature == None: 
-        return value
+        return value    # leaf summary value
     
     tree = Node()
     tree.f = feature
@@ -160,18 +157,17 @@ def PruneTree(tree, data, leafFun):
     if data.shape[0] == 0:
         return CollapseTree(tree)
     
+    data_l, data_r = Split(data, tree.f, tree.v)
+
     if isinstance(tree.l, Node) or isinstance(tree.r, Node):
-        data_l, data_r = Split(data, tree.f, tree.v)
-        
-    if leafFun == 'mean':
-        if isinstance(tree.l, Node): tree.l = PruneTree(tree.l, data_l, 'mean')
-        if isinstance(tree.r, Node): tree.r = PruneTree(tree.r, data_r, 'mean')
-    if leafFun == 'reg':
-        if isinstance(tree.l, Node): tree.l = PruneTree(tree.l, data_l, 'reg')
-        if isinstance(tree.r, Node): tree.r = PruneTree(tree.r, data_r, 'reg')
+
+        if isinstance(tree.l, Node): 
+            tree.l = PruneTree(tree.l, data_l, leafFun)
+        if isinstance(tree.r, Node): 
+            tree.r = PruneTree(tree.r, data_r, leafFun)
+
     
     if not isinstance(tree.l, Node) and not isinstance(tree.r, Node): 
-        data_l, data_r = Split(data, tree.f, tree.v)
         
         m = data.shape[1]
         
