@@ -1,9 +1,8 @@
 import numpy as np
 import pandas as pd
-import operator
-import math
 import matplotlib.pyplot as plt 
 import sys, getopt
+from collections import Counter, OrderedDict
 sys.path.append('../')
 import auxfuns 
 
@@ -30,30 +29,13 @@ def knn_est_label(x, data, lab, k):
     idx = pd.Index(sqDiff).sort_values(ascending = True, return_indexer = True)[1]
 
     # top k labels
-    labTopK = np.asarray(lab)[idx[0:(k + 1)]]
+    labTopK = np.asarray(lab)[idx[0:k]]
     classes = np.unique(labTopK)
 
-    # counting
-    labCount = np.array([])
-    for t in np.arange(len(classes)): 
-        labCount = np.append(labCount, sum([1 if i == classes[t] else 0 for i in labTopK]))
-
-    # return the majority
-    return classes[labCount.argmax()]
+    # voting
+    return OrderedDict(Counter(labTopK)).popitem(last = False)[0]
 
 
-'''
-def knn_scaling(data):
-
-    dmin = data.min()
-    dmax = data.max()
-    return (data - dmin)/(dmax - dmin)
-
-
-def knn_error_rate(label_true, label_pred):
-
-    return sum(label_true != label_pred)/len(label_true)
-'''
 
 
 if __name__ == '__main__':
